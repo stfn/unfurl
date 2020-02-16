@@ -117,7 +117,7 @@ type urlProc func(*url.URL, string) []string
 // will return []string{"one", "two", "three"}
 func keys(u *url.URL, _ string) []string {
 	out := make([]string, 0)
-	for key, _ := range u.Query() {
+	for key := range u.Query() {
 		out = append(out, key)
 	}
 	return out
