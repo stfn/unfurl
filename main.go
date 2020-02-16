@@ -8,8 +8,9 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"strings"
 
-	"github.com/jakewarren/tldomains"
+	"golang.org/x/net/publicsuffix"
 )
 
 func main() {
@@ -274,25 +275,21 @@ func format(u *url.URL, f string) []string {
 }
 
 func extractFromDomain(u *url.URL, selection string) string {
-
-	cache := os.TempDir() + "/tld.cache"
-	extract, err := tldomains.New(cache)
-
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed initialize tldomains: %s\n", err)
-	}
 	// remove the port before parsing
 	portRe := regexp.MustCompile(`(?m):\d+$`)
+	domain := portRe.ReplaceAllString(u.Host, "")
 
-	host := extract.Parse(portRe.ReplaceAllString(u.Host, ""))
+	eTLD, _ := publicsuffix.EffectiveTLDPlusOne(domain)
+	psfx, _ := publicsuffix.PublicSuffix(domain)
 
 	switch selection {
 	case "subdomain":
-		return host.Subdomain
+		return strings.TrimSuffix(domain, "."+eTLD)
 	case "root":
-		return host.Root
+		subdomains := strings.TrimSuffix(domain, "."+eTLD)
+		return strings.TrimPrefix(strings.TrimSuffix(domain, "."+psfx), subdomains+".")
 	case "tld":
-		return host.Suffix
+		return psfx
 	default:
 		return ""
 	}
