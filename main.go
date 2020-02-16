@@ -276,7 +276,7 @@ func format(u *url.URL, f string) []string {
 
 func extractFromDomain(u *url.URL, selection string) string {
 	// remove the port before parsing
-	portRe := regexp.MustCompile(`(?m):\d+$`)
+	portRe := regexp.MustCompile(`:\d+$`)
 	domain := portRe.ReplaceAllString(u.Host, "")
 
 	eTLD, _ := publicsuffix.EffectiveTLDPlusOne(domain)
